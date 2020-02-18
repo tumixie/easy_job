@@ -1,5 +1,8 @@
-``easy_job`` can make your analysis job Easy.
+``easy_job`` can make your analysis job easy
 ======================================================================
+shell part
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- usage of mysql_util
 
 .. code:: python
 
@@ -24,15 +27,14 @@
         update_columns         format: column1,column2
         update_condition_cols  format: column1,column2
     """
-    from easy_job.shell.db import mysql_util
-    from_file = 'path/to/csv/file'
-    # format like
-    # col1,col2
-    # a,b
-    args = ['upload',
-            'mysql+pymysql://root:root@1234@localhost:3306/test',
-            from_file,
-            'test',
-            '--mode=create',
-            ]
-    mysql_util.go(*args)
+
+
+    >>>from easy_job.shell.db import mysql_util
+    >>>from_file = 'path/to/csv/file'
+    >>>args = ['upload',
+                'mysql+pymysql://root:root@1234@localhost:3306/test',
+                from_file,
+                'test',
+                '--mode=create',
+                ]
+    >>>mysql_util.go(*args)
