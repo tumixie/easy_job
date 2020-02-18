@@ -7,7 +7,7 @@ Usage:
   util.py script <uri> <from_file> [<kwargs>] [--log_dir=<ld>] [--log_date=<lt>]
   util.py upload <uri> <from_file> [<to_table>] [--separate=<sep>] [--mode=<m>] [--log_dir=<ld>] [--log_date=<lt>]
   util.py update <uri> <from_file> <to_table> <update_columns> <update_condition_cols> [--separate=<sep>] [--log_dir=<ld>] [--log_date=<lt>]
-  util.py -h | --help
+  util.py -h | --helptes
   util.py --version
 
 Options:
@@ -54,9 +54,10 @@ def time_decorator(func):
 @time_decorator
 def extract(conn, database, table_name, to_file, query=None, sep=','):
     cursor = conn.cursor()
-    sql, column_str = _get_select_query_sql(conn, database, table_name=table_name, query=query, sep=sep)
+    sql = _get_select_query_sql(conn, database, table_name=table_name, query=query, sep=sep)
     cursor.execute(sql)
     logger.info(sql)
+    column_str = _get_columns_from_query_results(cursor, sep=sep)
     results = cursor.fetchmany(CHUNK_SIZE)
     logger.info('fetch result write to file: {0}'.format(to_file))
     with open(to_file, 'w', encoding='utf-8') as of:
@@ -107,7 +108,7 @@ def execute_sql_file(conn, from_file, **kwargs):
             logger.info(sql)
             start_time = time.time()
             cursor.execute(sql)
-            records = cursor.fetchmany(1)
+            records = cursor.fetchmany(CHUNK_SIZE)
             if records is not None and len(records) > 0:
                 logger.info("------------result--------------")
                 while records:
@@ -147,12 +148,20 @@ def _get_select_query_sql(conn, database, table_name=None, query=None, sep=','):
         sql = 'select {1} from {0}'.format(table_name, columns_str)
     else:
         sql = query
-    m = re.search('select(?P<cols>[\w ,]+)from', sql)
-    if m is not None:
-        columns_str = '{0}'.format(sep).join(m.group('cols').replace(' ', '').split(','))
-    else:
-        raise IllegalQuerySentence()
-    return sql, columns_str
+    return sql
+
+
+def _get_columns_from_query_results(cursor: pymysql.cursors.Cursor, **kwargs):
+    """
+    获取返回数据的列名
+    :param cursor:
+    :return:
+    """
+    columns = []
+    for row in cursor.description:
+        columns.append(row[0])
+    column_str = '{0}'.format(kwargs.pop('sep', ',')).join(columns)
+    return column_str
 
 
 def execute_insert_many(from_sql_file, conn):
@@ -346,6 +355,10 @@ def _get_log_file_name(args) -> str:
 
 
 class IllegalQuerySentence(Exception):
+    pass
+
+
+class NotSupportedQuerySentence(Exception):
     pass
 
 

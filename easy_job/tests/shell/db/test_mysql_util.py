@@ -54,7 +54,7 @@ class TestMysqlUtil(unittest.TestCase):
         args2 = ['extract',
                  'mysql+pymysql://root:root@1234@localhost:3306/test',
                  '-q',
-                 'select months, account from test.loan_all limit 2',
+                 'select * from test.loan_all limit 2',
                  self.to_file,
                  '--log_dir={0}'.format(LOG_DIR.as_posix()),
                  '--log_date={0}'.format(self.log_date),
